@@ -76,6 +76,10 @@ model User {
   Profile Profile[]
 
   Analytics Analytics[]
+
+  followers Follow[] @relation("Follow_Follower")
+
+  following Follow[] @relation("Follow_Following")
 }
 
 model Profile {
@@ -92,6 +96,20 @@ model Profile {
   website          String?
   socialLinks      Json?
   preferences      Json?
+}
+
+model Follow {
+  id          String   @id @default(uuid())
+  
+  followerId  String
+  follower    User     @relation("Follow_Follower", fields: [followerId], references: [id])
+  
+  followingId String
+  following   User     @relation("Follow_Following", fields: [followingId], references: [id])
+  
+  createdAt   DateTime @default(now())
+  
+  @@unique([followerId, followingId]) // un user ne peut suivre une personne qu'une fois
 }
 
 model Subscription {
