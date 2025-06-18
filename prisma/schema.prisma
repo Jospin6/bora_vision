@@ -14,38 +14,309 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id            String   @id @default(uuid())
-  name          String?
-  email         String   @unique
-  emailVerified DateTime?
-  image         String?
-  password      String?
-  role          Role     @default(USER)
-  accounts      Account[]
-  sessions      Session[]
+enum MediaType {
+  VIDEO
+  AUDIO
+  LIVE
+  PODCAST
 }
 
-model Account {
-  id                String  @id @default(uuid())
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  user              User    @relation(fields: [userId], references: [id])
+enum ContentStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+  BANNED
 }
 
-model Session {
-  id           String   @id @default(uuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-  user         User     @relation(fields: [userId], references: [id])
-}
-
-enum Role {
-  USER
+enum UserRole {
   ADMIN
-  SUPER_ADMIN
+  CONTENT_CREATOR
+  USER
+  MODERATOR
 }
 
+enum SubscriptionPlan {
+  FREE
+  BASIC
+  PREMIUM
+  FAMILY
+}
+
+model User {
+  id                String         @id @default(uuid())
+  email             String         @unique
+  username          String         @unique
+  password          String
+  firstName         String?
+  lastName          String?
+  avatar            String?
+  bio               String?
+  role              UserRole       @default(USER)
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  lastLogin         DateTime?
+  isVerified        Boolean        @default(false)
+  verificationToken String?
+  resetToken        String?
+  resetTokenExpiry  DateTime?
+  
+  // Relations
+  subscriptions     Subscription[]
+  playlists         Playlist[]
+  favorites         Favorite[]
+  histories         History[]
+  comments          Comment[]
+  reactions         Reaction[]
+  payments          Payment[]
+  devices           Device[]
+  notifications     Notification[]
+  createdContents   Content[]       @relation("ContentCreator")
+  uploadedMedias    Media[]         @relation("MediaUploader")
+
+  Profile Profile[]
+
+  Analytics Analytics[]
+}
+
+model Profile {
+  id               String         @id @default(uuid())
+  userId           String         @unique
+  user             User           @relation(fields: [userId], references: [id])
+  displayName      String?
+  profilePicture   String?
+  coverPhoto       String?
+  country          String?
+  language         String?
+  birthDate        DateTime?
+  gender           String?
+  website          String?
+  socialLinks      Json?
+  preferences      Json?
+}
+
+model Subscription {
+  id               String         @id @default(uuid())
+  userId           String
+  user             User           @relation(fields: [userId], references: [id])
+  plan             SubscriptionPlan @default(FREE)
+  startDate        DateTime       @default(now())
+  endDate          DateTime?
+  isActive         Boolean        @default(true)
+  autoRenew        Boolean       @default(false)
+  paymentMethodId  String?
+  lastPaymentDate  DateTime?
+  nextBillingDate  DateTime?
+}
+
+model Content {
+  id               String         @id @default(uuid())
+  title            String
+  description      String?
+  thumbnail        String
+  status           ContentStatus  @default(DRAFT)
+  type             MediaType
+  duration         Int?           // en secondes
+  releaseDate      DateTime?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  views            Int            @default(0)
+  isFeatured       Boolean        @default(false)
+  isExclusive      Boolean        @default(false)
+  ageRestriction   Int?           // 0 = tout public, 12, 16, 18, etc.
+  metadata         Json?          // Metadata supplémentaire
+  
+  // Relations
+  creatorId        String
+  creator          User           @relation("ContentCreator", fields: [creatorId], references: [id])
+  media            Media[]
+  categories       Category[]
+  tags             Tag[]
+  playlists        PlaylistItem[]
+  favorites        Favorite[]
+  histories        History[]
+  comments         Comment[]
+  reactions        Reaction[]
+
+  Analytics Analytics[]
+}
+
+model Media {
+  id               String         @id @default(uuid())
+  contentId        String
+  content          Content        @relation(fields: [contentId], references: [id])
+  url              String
+  format           String         // mp4, mp3, m3u8, etc.
+  quality          String?        // 1080p, 720p, 480p, etc.
+  bitrate          Int?           // en kbps
+  size             Int?           // en octets
+  duration         Int?           // en secondes
+  isDefault        Boolean        @default(false)
+  createdAt        DateTime       @default(now())
+  
+  // Relations
+  uploaderId       String
+  uploader         User           @relation("MediaUploader", fields: [uploaderId], references: [id])
+}
+
+model Category {
+  id               String         @id @default(uuid())
+  name             String         @unique
+  slug             String         @unique
+  description      String?
+  icon             String?
+  isActive         Boolean        @default(true)
+  order            Int?
+  
+  // Relations
+  contents         Content[]
+}
+
+model Tag {
+  id               String         @id @default(uuid())
+  name             String         @unique
+  slug             String         @unique
+  
+  // Relations
+  contents         Content[]
+}
+
+model Playlist {
+  id               String         @id @default(uuid())
+  name             String
+  description      String?
+  isPublic         Boolean        @default(false)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  
+  // Relations
+  ownerId          String
+  owner            User           @relation(fields: [ownerId], references: [id])
+  items            PlaylistItem[]
+}
+
+model PlaylistItem {
+  id               String         @id @default(uuid())
+  playlistId       String
+  playlist         Playlist       @relation(fields: [playlistId], references: [id])
+  contentId        String
+  content          Content        @relation(fields: [contentId], references: [id])
+  order            Int
+  addedAt          DateTime       @default(now())
+}
+
+model Favorite {
+  id               String         @id @default(uuid())
+  userId           String
+  user             User           @relation(fields: [userId], references: [id])
+  contentId        String
+  content          Content        @relation(fields: [contentId], references: [id])
+  createdAt        DateTime       @default(now())
+}
+
+model History {
+  id               String         @id @default(uuid())
+  userId           String
+  user             User           @relation(fields: [userId], references: [id])
+  contentId        String
+  content          Content        @relation(fields: [contentId], references: [id])
+  progress         Int            @default(0) // en secondes
+  lastWatchedAt    DateTime       @default(now())
+  deviceInfo       String?
+}
+
+model Comment {
+  id               String         @id @default(uuid())
+  userId           String
+  user             User           @relation(fields: [userId], references: [id])
+  contentId        String
+  content          Content        @relation(fields: [contentId], references: [id])
+  text             String
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  parentId         String?
+  parent           Comment?       @relation("CommentReplies", fields: [parentId], references: [id])
+  replies          Comment[]      @relation("CommentReplies")
+  isEdited         Boolean        @default(false)
+}
+
+model Reaction {
+  id               String         @id @default(uuid())
+  userId           String
+  user             User           @relation(fields: [userId], references: [id])
+  contentId        String
+  content          Content        @relation(fields: [contentId], references: [id])
+  type             String         // like, love, haha, wow, sad, angry
+  createdAt        DateTime       @default(now())
+  
+  @@unique([userId, contentId])
+}
+
+model Payment {
+  id               String         @id @default(uuid())
+  userId           String
+  user             User           @relation(fields: [userId], references: [id])
+  amount           Float
+  currency         String         @default("USD")
+  paymentMethod    String
+  transactionId    String
+  status           String         // pending, completed, failed, refunded
+  description      String?
+  createdAt        DateTime       @default(now())
+  processedAt      DateTime?
+}
+
+model Device {
+  id               String         @id @default(uuid())
+  userId           String
+  user             User           @relation(fields: [userId], references: [id])
+  deviceId         String
+  deviceName       String
+  deviceType       String?        // mobile, tablet, desktop, tv
+  os               String?
+  appVersion       String?
+  lastActive       DateTime       @default(now())
+  fcmToken         String?
+}
+
+model Notification {
+  id               String         @id @default(uuid())
+  userId           String
+  user             User           @relation(fields: [userId], references: [id])
+  title            String
+  message          String
+  isRead           Boolean        @default(false)
+  createdAt        DateTime       @default(now())
+  readAt           DateTime?
+  type             String?        // system, content, payment, etc.
+  relatedId        String?        // ID du contenu ou autre entité liée
+  metadata         Json?
+}
+
+model Advertisement {
+  id               String         @id @default(uuid())
+  title            String
+  description      String?
+  image            String
+  url              String?
+  startDate        DateTime
+  endDate          DateTime
+  isActive         Boolean       @default(true)
+  targetAudience   Json?         // Critères de ciblage
+  impressions      Int           @default(0)
+  clicks           Int           @default(0)
+  createdAt        DateTime      @default(now())
+}
+
+model Analytics {
+  id               String         @id @default(uuid())
+  contentId        String?
+  content          Content?       @relation(fields: [contentId], references: [id])
+  date             DateTime
+  views            Int           @default(0)
+  watchTime        Int           @default(0) // en secondes
+  averageProgress  Float         @default(0) // % de progression moyen
+  devices          Json?         // Répartition par appareil
+  locations        Json?         // Répartition géographique
+  userId           String?
+  user             User?          @relation(fields: [userId], references: [id])
+}
