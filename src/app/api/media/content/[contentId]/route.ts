@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import prisma from '@/lib/prisma'
+import prisma  from "../../../../../../prisma/prisma"
 
 // GET - Récupérer tous les médias d'un contenu
 export async function GET(

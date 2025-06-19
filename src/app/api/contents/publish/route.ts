@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
-import prisma from '@/lib/prisma'
-import { ContentStatus } from '@prisma/client'
+import prisma  from "../../../../../prisma/prisma"
 
 export async function PATCH(
   request: Request,

@@ -1,8 +1,7 @@
 // app/api/advertisements/[id]/route.ts
-import { PrismaClient } from '@prisma/client';
 import { NextResponse } from 'next/server';
+import prisma  from "../../../../../prisma/prisma"
 
-const prisma = new PrismaClient();
 
 export async function GET(req: Request, { params }: { params: { id: string } }) {
   const { id } = params;

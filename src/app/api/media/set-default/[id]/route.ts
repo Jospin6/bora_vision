@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import prisma from '@/lib/prisma'
+import prisma  from "../../../../../../prisma/prisma"
 
 // PATCH - Définir un média comme média par défaut
 export async function PATCH(

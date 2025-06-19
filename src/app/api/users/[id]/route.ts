@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
-import prisma from '@/lib/prisma'
-import { UserRole } from '@prisma/client'
+import prisma  from "../../../../../prisma/prisma"
 
 // GET - Récupérer un utilisateur spécifique
 export async function GET(

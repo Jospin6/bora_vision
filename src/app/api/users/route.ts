@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
-import prisma from '@/lib/prisma'
+import prisma  from "../../../../prisma/prisma"
 import { hashPassword } from '@/lib/auth'
-import { UserRole } from '@prisma/client'
 
 // Types
 interface UserCreateInput {
@@ -10,7 +9,7 @@ interface UserCreateInput {
   password: string
   firstName?: string
   lastName?: string
-  role?: UserRole
+  role?: "USER"
 }
 
 // GET - Récupérer tous les utilisateurs
@@ -21,7 +20,7 @@ export async function GET(request: Request) {
     const limit = parseInt(searchParams.get('limit') || '10')
     const role = searchParams.get('role')
 
-    const where = role ? { role: role as UserRole } : {}
+    const where = role ? { role: role as "USER" } : {}
 
     const [users, total] = await Promise.all([
       prisma.user.findMany({

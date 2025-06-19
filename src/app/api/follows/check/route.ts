@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import prisma from '@/lib/prisma'
+import prisma  from "../../../../../prisma/prisma"
 
 // GET - Vérifier si un follow existe
 export async function GET(request: Request) {

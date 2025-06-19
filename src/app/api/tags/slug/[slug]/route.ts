@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import prisma from '@/lib/prisma'
+import prisma  from "../../../../../../prisma/prisma"
 
 // GET - Récupérer un tag par son slug
 export async function GET(

@@ -1,13 +1,12 @@
 import { NextResponse } from 'next/server'
-import prisma from '@/lib/prisma'
-import { ContentStatus, MediaType } from '@prisma/client'
+import prisma  from "../../../../prisma/prisma"
 
 // Types
 interface ContentCreateInput {
   title: string
   description?: string
   thumbnail: string
-  type: MediaType
+  type: any
   duration?: number
   releaseDate?: string
   isExclusive?: boolean
@@ -23,8 +22,8 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '10')
-    const type = searchParams.get('type') as MediaType | undefined
-    const status = searchParams.get('status') as ContentStatus | undefined
+    const type = searchParams.get('type') as any | undefined
+    const status = searchParams.get('status') as any | undefined
     const featured = searchParams.get('featured')
     const categoryId = searchParams.get('categoryId')
     const creatorId = searchParams.get('creatorId')

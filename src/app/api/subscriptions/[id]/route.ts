@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
-import prisma from '@/lib/prisma'
-import { SubscriptionPlan } from '@prisma/client'
+import prisma  from "../../../../../prisma/prisma"
 
 // GET - Récupérer une subscription spécifique
 export async function GET(

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
-import prisma from '@/lib/prisma'
-import { slugify } from '@/lib/utils'
+import prisma  from "../../../../prisma/prisma"
+// import { slugify } from '@/lib/utils'
 
 // Types
 interface CategoryCreateInput {
@@ -63,7 +63,7 @@ export async function POST(request: Request) {
       where: {
         OR: [
           { name: body.name },
-          { slug: slugify(body.name) }
+          // { slug: slugify(body.name) }
         ]
       }
     })
@@ -79,7 +79,7 @@ export async function POST(request: Request) {
     const category = await prisma.category.create({
       data: {
         name: body.name,
-        slug: slugify(body.name),
+        // slug: slugify(body.name),
         description: body.description,
         icon: body.icon,
         isActive: body.isActive ?? true,

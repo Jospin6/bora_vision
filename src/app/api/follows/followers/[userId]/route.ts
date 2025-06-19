@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import prisma from '@/lib/prisma'
+import prisma  from "../../../../../../prisma/prisma"
 
 // GET - Récupérer les followers d'un utilisateur
 export async function GET(
@@ -36,7 +36,7 @@ export async function GET(
     ])
 
     return NextResponse.json({
-      data: followers.map(f => f.follower),
+      data: followers.map((f: { follower: any }) => f.follower),
       meta: {
         total,
         page,

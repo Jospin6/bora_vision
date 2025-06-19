@@ -1,11 +1,10 @@
 import { NextResponse } from 'next/server'
-import prisma from '@/lib/prisma'
-import { SubscriptionPlan } from '@prisma/client'
+import prisma  from "../../../../prisma/prisma"
 
 // Types
 interface SubscriptionCreateInput {
   userId: string
-  plan: SubscriptionPlan
+  plan: any
   endDate?: string
   autoRenew?: boolean
   paymentMethodId?: string
@@ -17,7 +16,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '10')
-    const plan = searchParams.get('plan') as SubscriptionPlan | undefined
+    const plan = searchParams.get('plan') as any | undefined
     const activeOnly = searchParams.get('activeOnly') === 'true'
 
     const where = {
@@ -117,7 +116,7 @@ export async function POST(request: Request) {
 }
 
 // Helper function to calculate next billing date based on plan
-function calculateNextBillingDate(plan: SubscriptionPlan): Date {
+function calculateNextBillingDate(plan: any): Date {
   const date = new Date()
   switch (plan) {
     case 'MONTHLY':

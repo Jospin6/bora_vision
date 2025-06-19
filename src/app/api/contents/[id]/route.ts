@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
-import prisma from '@/lib/prisma'
-import { ContentStatus, MediaType } from '@prisma/client'
+import prisma  from "../../../../../prisma/prisma"
 
 // GET - Récupérer un contenu spécifique
 export async function GET(
@@ -104,10 +103,10 @@ export async function PUT(
         ageRestriction: body.ageRestriction,
         metadata: body.metadata,
         categories: body.categoryIds ? {
-          set: body.categoryIds.map(id => ({ id }))
+          set: body.categoryIds.map((id: any) => ({ id }))
         } : undefined,
         tags: body.tagIds ? {
-          set: body.tagIds.map(id => ({ id }))
+          set: body.tagIds.map((id: any) => ({ id }))
         } : undefined
       },
       include: {

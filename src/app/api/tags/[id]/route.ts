@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
-import prisma from '@/lib/prisma'
-import { slugify } from '@/lib/utils'
+import prisma  from "../../../../../prisma/prisma"
+// import { slugify } from '@/lib/utils'
 
 // GET - Récupérer un tag spécifique
 export async function GET(
@@ -75,7 +75,7 @@ export async function PUT(
         where: {
           OR: [
             { name: body.name },
-            { slug: slugify(body.name) }
+            // { slug: slugify(body.name) }
           ],
           NOT: {
             id: params.id
@@ -95,7 +95,7 @@ export async function PUT(
       where: { id: params.id },
       data: {
         name: body.name,
-        slug: body.name ? slugify(body.name) : undefined
+        // slug: body.name ? slugify(body.name) : undefined
       }
     })
 

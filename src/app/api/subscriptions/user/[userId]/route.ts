@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import prisma from '@/lib/prisma'
+import prisma  from "../../../../../../prisma/prisma"
 
 // GET - Récupérer les subscriptions d'un utilisateur spécifique
 export async function GET(
@@ -31,11 +31,11 @@ export async function GET(
     })
 
     // Retourner la subscription active en premier si elle existe
-    const activeSubscription = subscriptions.find(sub => sub.isActive)
+    const activeSubscription = subscriptions.find((sub: { isActive: any }) => sub.isActive)
     const sortedSubscriptions = activeSubscription
       ? [
           activeSubscription,
-          ...subscriptions.filter(sub => sub.id !== activeSubscription.id)
+          ...subscriptions.filter((sub: { id: any }) => sub.id !== activeSubscription.id)
         ]
       : subscriptions
 

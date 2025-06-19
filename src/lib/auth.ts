@@ -35,3 +35,12 @@
 //     signIn: "/login",
 //   },
 // };
+
+export const hashPassword = (password: string): string => {
+
+    return ""
+}
+
+export const verifyPassword = (currentPassword: string, password: string): boolean => {
+    return false
+}

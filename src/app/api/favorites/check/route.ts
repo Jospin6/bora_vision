@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import prisma from '@/lib/prisma'
+import prisma  from "../../../../../prisma/prisma"
 
 // GET - Vérifier si un contenu est dans les favoris d'un utilisateur
 export async function GET(request: Request) {
