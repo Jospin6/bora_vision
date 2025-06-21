@@ -93,7 +93,7 @@ export default function SignupPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  };                
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-600 via-purple-500 to-blue-500 flex items-center justify-center p-4">
