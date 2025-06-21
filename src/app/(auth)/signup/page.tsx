@@ -105,7 +105,7 @@ export default function SignupPage() {
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
             Rejoignez Bora Vision
-          </h1>
+          </h1>             
           <p className="text-gray-600">
             Créez votre compte pour accéder à du contenu exclusif
           </p>
