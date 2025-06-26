@@ -1,14 +1,15 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, NextRequest } from 'next/server'
 import prisma  from "../../../../../prisma/prisma"
 
 // GET - Récupérer un contenu spécifique
 export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
+  req: NextRequest
 ) {
+  const url = new URL(req.url)
+  const id = url.pathname.split('/').pop() as string
   try {
     const content = await prisma.content.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       include: {
         creator: {
           select: {
@@ -48,7 +49,6 @@ export async function GET(
           select: {
             favorites: true,
             comments: true,
-            views: true
           }
         }
       }
@@ -72,15 +72,16 @@ export async function GET(
 
 // PUT - Mettre à jour complètement un contenu
 export async function PUT(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest
 ) {
+  const url = new URL(request.url)
+  const id = url.pathname.split('/').pop() as string
   try {
     const body = await request.json()
 
     // Vérifier si le contenu existe
     const existingContent = await prisma.content.findUnique({
-      where: { id: params.id }
+      where: { id: id }
     })
 
     if (!existingContent) {
@@ -91,7 +92,7 @@ export async function PUT(
     }
 
     const updatedContent = await prisma.content.update({
-      where: { id: params.id },
+      where: { id: id },
       data: {
         title: body.title,
         description: body.description,
@@ -130,13 +131,14 @@ export async function PUT(
 
 // DELETE - Supprimer un contenu
 export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest
 ) {
+  const url = new URL(request.url)
+  const id = url.pathname.split('/').pop() as string
   try {
     // Vérifier d'abord si le contenu existe
     const content = await prisma.content.findUnique({
-      where: { id: params.id }
+      where: { id: id }
     })
 
     if (!content) {
@@ -148,7 +150,7 @@ export async function DELETE(
 
     // Supprimer le contenu (les relations seront gérées par Prisma selon les règles de suppression)
     await prisma.content.delete({
-      where: { id: params.id }
+      where: { id: id }
     })
 
     return NextResponse.json(

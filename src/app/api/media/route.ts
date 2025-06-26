@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, NextRequest } from 'next/server'
 import prisma  from "../../../../prisma/prisma"
 
 // Types
@@ -14,7 +14,7 @@ interface MediaCreateInput {
 }
 
 // POST - Créer un nouveau média
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     const body: MediaCreateInput = await request.json()
 

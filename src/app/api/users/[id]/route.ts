@@ -1,14 +1,15 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, NextRequest } from 'next/server'
 import prisma  from "../../../../../prisma/prisma"
 
 // GET - Récupérer un utilisateur spécifique
 export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest
 ) {
+  const url = new URL(request.url)
+  const id = url.pathname.split('/').pop() as string
   try {
     const user = await prisma.user.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       select: {
         id: true,
         email: true,
@@ -21,7 +22,6 @@ export async function GET(
         createdAt: true,
         updatedAt: true,
         lastLogin: true,
-        isVerified: true,
         _count: {
           select: {
             createdContents: true,
@@ -50,9 +50,10 @@ export async function GET(
 
 // PUT - Mettre à jour un utilisateur
 export async function PUT(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest
 ) {
+  const url = new URL(request.url)
+  const id = url.pathname.split('/').pop() as string
   try {
     const body = await request.json()
 
@@ -65,7 +66,7 @@ export async function PUT(
     }
 
     const updatedUser = await prisma.user.update({
-      where: { id: params.id },
+      where: { id: id },
       data: {
         firstName: body.firstName,
         lastName: body.lastName,
@@ -96,13 +97,14 @@ export async function PUT(
 
 // DELETE - Supprimer un utilisateur
 export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest
 ) {
+  const url = new URL(request.url)
+  const id = url.pathname.split('/').pop() as string
   try {
     // Vérifier d'abord si l'utilisateur existe
     const user = await prisma.user.findUnique({
-      where: { id: params.id }
+      where: { id: id }
     })
 
     if (!user) {
@@ -114,7 +116,7 @@ export async function DELETE(
 
     // Supprimer l'utilisateur
     await prisma.user.delete({
-      where: { id: params.id }
+      where: { id: id }
     })
 
     return NextResponse.json(

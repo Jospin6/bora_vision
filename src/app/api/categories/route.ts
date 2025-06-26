@@ -79,6 +79,10 @@ export async function POST(request: Request) {
     const category = await prisma.category.create({
       data: {
         name: body.name,
+        slug: body.name
+          .toLowerCase()
+          .replace(/ /g, '-')
+          .replace(/[^\w-]+/g, ''),
         // slug: slugify(body.name),
         description: body.description,
         icon: body.icon,

@@ -7,7 +7,7 @@ const secret = new TextEncoder().encode(SECRET_KEY);
 
 export async function GET() {
     try {
-        const token = (await cookies()).get("token_bora_vision")?.value;
+        const token = (await cookies()).get("boravision")?.value;
 
         if (!token) {
             return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
