@@ -1,15 +1,16 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, NextRequest } from 'next/server'
 import prisma  from "../../../../../prisma/prisma"
 // import { slugify } from '@/lib/utils'
 
 // GET - Récupérer une catégorie spécifique
 export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
+  req: NextRequest
 ) {
+  const url = new URL(req.url)
+  const id = url.pathname.split('/').pop() as string
   try {
     const category = await prisma.category.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       include: {
         contents: {
           take: 10, // Limiter les contenus retournés
@@ -51,15 +52,16 @@ export async function GET(
 
 // PUT - Mettre à jour complètement une catégorie
 export async function PUT(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest
 ) {
+  const url = new URL(request.url)
+  const id = url.pathname.split('/').pop() as string
   try {
     const body = await request.json()
 
     // Vérifier si la catégorie existe
     const existingCategory = await prisma.category.findUnique({
-      where: { id: params.id }
+      where: { id: id }
     })
 
     if (!existingCategory) {
@@ -78,7 +80,7 @@ export async function PUT(
             // { slug: slugify(body.name) }
           ],
           NOT: {
-            id: params.id
+            id: id
           }
         }
       })
@@ -92,7 +94,7 @@ export async function PUT(
     }
 
     const updatedCategory = await prisma.category.update({
-      where: { id: params.id },
+      where: { id: id },
       data: {
         name: body.name,
         // slug: body.name ? slugify(body.name) : undefined,
@@ -114,13 +116,14 @@ export async function PUT(
 
 // DELETE - Supprimer une catégorie
 export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest
 ) {
+  const url = new URL(request.url)
+  const id = url.pathname.split('/').pop() as string
   try {
     // Vérifier d'abord si la catégorie existe
     const category = await prisma.category.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       include: {
         _count: {
           select: {
@@ -147,7 +150,7 @@ export async function DELETE(
 
     // Supprimer la catégorie
     await prisma.category.delete({
-      where: { id: params.id }
+      where: { id: id }
     })
 
     return NextResponse.json(

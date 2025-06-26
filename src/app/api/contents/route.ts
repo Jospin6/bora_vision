@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, NextRequest } from 'next/server'
 import prisma  from "../../../../prisma/prisma"
 
 // Types
@@ -17,7 +17,7 @@ interface ContentCreateInput {
 }
 
 // GET - Récupérer tous les contenus
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get('page') || '1')
@@ -63,7 +63,6 @@ export async function GET(request: Request) {
           },
           _count: {
             select: {
-              views: true,
               favorites: true,
               comments: true
             }
@@ -93,7 +92,7 @@ export async function GET(request: Request) {
 }
 
 // POST - Créer un nouveau contenu
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     const body: ContentCreateInput = await request.json()
 

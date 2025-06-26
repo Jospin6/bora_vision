@@ -1,14 +1,15 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, NextRequest } from 'next/server'
 import prisma  from "../../../../../prisma/prisma"
 
 // GET - Récupérer un média spécifique
 export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest
 ) {
+  const url = new URL(request.url)
+  const id = url.pathname.split('/').pop() as string
   try {
     const media = await prisma.media.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       include: {
         content: {
           select: {
@@ -45,15 +46,16 @@ export async function GET(
 
 // PUT - Mettre à jour complètement un média
 export async function PUT(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest
 ) {
+  const url = new URL(request.url)
+  const id = url.pathname.split('/').pop() as string
   try {
     const body = await request.json()
 
     // Vérifier si le média existe
     const existingMedia = await prisma.media.findUnique({
-      where: { id: params.id }
+      where: { id: id }
     })
 
     if (!existingMedia) {
@@ -72,7 +74,7 @@ export async function PUT(
     }
 
     const updatedMedia = await prisma.media.update({
-      where: { id: params.id },
+      where: { id: id },
       data: {
         url: body.url,
         format: body.format,
@@ -102,13 +104,14 @@ export async function PUT(
 
 // DELETE - Supprimer un média
 export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest
 ) {
+  const url = new URL(request.url)
+  const id = url.pathname.split('/').pop() as string
   try {
     // Vérifier d'abord si le média existe
     const media = await prisma.media.findUnique({
-      where: { id: params.id }
+      where: { id: id }
     })
 
     if (!media) {
@@ -138,7 +141,7 @@ export async function DELETE(
 
     // Supprimer le média
     await prisma.media.delete({
-      where: { id: params.id }
+      where: { id: id }
     })
 
     return NextResponse.json(
