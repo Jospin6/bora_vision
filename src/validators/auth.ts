@@ -1,11 +1,14 @@
-// validators/auth.ts
 import { z } from "zod";
 
 export const loginSchema = z.object({
   email: z.string().email("Email invalide"),
-  password: z.string().min(6, "6 caractères minimum")
+  password: z.string().min(8, "8 caractères minimum"),
 });
 
 export const signupSchema = loginSchema.extend({
-  // Ajoutez des champs supplémentaires si besoin
+  name: z.string().min(2, "2 caractères minimum"),
+  confirmPassword: z.string(),
+}).refine(data => data.password === data.confirmPassword, {
+  message: "Les mots de passe ne correspondent pas",
+  path: ["confirmPassword"],
 });
