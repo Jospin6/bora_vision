@@ -18,7 +18,7 @@ const routePermissions: Record<string, ("USER" | "ADMIN")[]> = {
 };
 
 export async function middleware(request: NextRequest) {
-    const token = request.cookies.get("token_bora_vision")?.value || "";
+    const token = request.cookies.get("boravision")?.value || "";
     const path = request.nextUrl.pathname;
 
     if (path === "/login" || path === "/unauthorized") return NextResponse.next();
