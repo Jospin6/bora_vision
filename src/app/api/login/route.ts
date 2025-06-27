@@ -1,7 +1,6 @@
 import bcrypt from "bcryptjs";
 import { NextResponse, NextRequest } from "next/server";
-import prisma from "../../../../../prisma/prisma";
-import { SignJWT } from "jose";
+import prisma from "../../../../prisma/prisma";
 import { cookies } from "next/headers";
 import { generateToken } from "@/lib/utils";
 

@@ -28,7 +28,7 @@ export default function Login() {
     setError("");
 
     try {
-       const response = await axios.post('/api/auth/login', data);
+       const response = await axios.post('/api/login', data);
        console.log("Inscription réussie", response.data);
     } catch (error) {
       setError("Invalid email or password");

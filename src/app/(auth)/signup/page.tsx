@@ -29,7 +29,7 @@ export default function RegisterForm() {
   const onSubmit = async (data: signupFormData) => {
     setError("");
     try {
-      const response = await axios.post('/api/auth/signup', data);
+      const response = await axios.post('/api/signup', data);
       if (!response.data.id) {
         setError("Invalid email or password");
         return;
