@@ -23,11 +23,11 @@ export default function Home() {
     console.log('Fichier sélectionné:', file);
     // Ici vous pouvez ajouter la logique pour traiter le fichier
     // Par exemple: upload vers un serveur, prévisualisation, etc.
-    
+
     // Créer une URL temporaire pour prévisualiser le fichier
     const fileUrl = URL.createObjectURL(file);
     console.log('URL du fichier:', fileUrl);
-    
+
     // Vous pouvez maintenant utiliser cette URL pour afficher le fichier
     // ou l'envoyer vers votre backend pour traitement
   };
@@ -52,9 +52,9 @@ export default function Home() {
         currentIndex={currentVideoIndex}
         onVideoChange={handleVideoChange}
       />
-      
+
       <Sidebar onCreateClick={() => setShowFileUpload(true)} />
-      
+
       <FileUpload
         isOpen={showFileUpload}
         onClose={() => setShowFileUpload(false)}
