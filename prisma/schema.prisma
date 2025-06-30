@@ -13,20 +13,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum MediaType {
-  VIDEO
-  AUDIO
-  LIVE
-  PODCAST
-}
-
-enum ContentStatus {
-  DRAFT
-  PUBLISHED
-  ARCHIVED
-  BANNED
-}
-
 enum UserRole {
   ADMIN
   CONTENT_CREATOR
@@ -34,52 +20,37 @@ enum UserRole {
   MODERATOR
 }
 
-enum SubscriptionPlan {
-  FREE
-  BASIC
-  PREMIUM
-  FAMILY
-}
-
 model User {
-  id                String         @id @default(cuid())
-  name              String?
-  email             String         @unique
-  emailVerified     DateTime?
-  image             String?
-  username          String         @unique
-  password          String?        // Re-adding password for CredentialsProvider
-  firstName         String?
-  lastName          String?
-  avatar            String?
-  bio               String?
-  role              UserRole       @default(USER)
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @updatedAt
-  lastLogin         DateTime?
-  
-  // Relations
-  accounts          Account[]
-  sessions          Session[]
-  subscriptions     Subscription[]
-  playlists         Playlist[]
-  favorites         Favorite[]
-  histories         History[]
-  comments          Comment[]
-  reactions         Reaction[]
-  payments          Payment[]
-  devices           Device[]
-  notifications     Notification[]
-  createdContents   Content[]       @relation("ContentCreator")
-  uploadedMedias    Media[]         @relation("MediaUploader")
-
-  Profile Profile[]
-
-  Analytics Analytics[]
-
-  followers Follow[] @relation("Follow_Follower")
-
-  following Follow[] @relation("Follow_Following")
+  id               String             @id @default(uuid())
+  username         String             @unique
+  email            String             @unique
+  password         String
+  bio              String?
+  avatar           String?
+  isVerified       Boolean            @default(false)
+  posts            Post[]
+  comments         Comment[]
+  likes            Like[]
+  followers        Follow[]           @relation("followers")
+  following        Follow[]           @relation("following")
+  notifications    Notification[]     @relation("NotificationUser")
+  sentNotifications Notification[]    @relation("NotificationSender")
+  messages         Message[]
+  bookmarks        Bookmark[]
+  duets            Duet[]
+  analytics        UserAnalytic[]
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  Account          Account[]
+  Session          Session[]
+  LikeComment      LikeComment[]
+  Reply            Reply[]
+  View             View[]
+  Reaction         Reaction[]
+  UserConversation UserConversation[]
+  Conversation Conversation[] @relation("ConversationParticipants")
+  Interest Topic[]
+  IpLog IpLog[]
 }
 
 model Account {
@@ -117,259 +88,232 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-model Profile {
-  id               String         @id @default(uuid())
-  userId           String         @unique
-  user             User           @relation(fields: [userId], references: [id])
-  displayName      String?
-  profilePicture   String?
-  coverPhoto       String?
-  country          String?
-  language         String?
-  birthDate        DateTime?
-  gender           String?
-  website          String?
-  socialLinks      Json?
-  preferences      Json?
+model IpLog {
+  id           String    @id @default(uuid())
+  ip           String    // "92.184.105.12"
+  countryCode  String    // "FR"
+  userId       String
+  user         User      @relation(fields: [userId], references: [id])
+  createdAt    DateTime  @default(now())
+}
+
+model Post {
+  id             String         @id @default(uuid())
+  caption        String?
+  videoUrl       String // Stockage (S3, Cloudinary, etc.)
+  thumbnail      String? // Miniature custom
+  duration       Int? // Durée en secondes
+  author         User           @relation(fields: [authorId], references: [id])
+  authorId       String
+  likes          Like[]
+  comments       Comment[]
+  hashtags       Hashtag[]
+  sound          Sound?         @relation(fields: [soundId], references: [id])
+  soundId        String?
+  views          View[] // Statistiques de vues
+  bookmarks      Bookmark[]
+  duetsOriginal  Duet[]         @relation("OriginalPost")
+  duetsDuet      Duet[]         @relation("DuetPost")
+  isPublic       Boolean        @default(true)
+  allowComments  Boolean        @default(true)
+  allowDuets     Boolean        @default(true)
+  allowDownloads Boolean        @default(false)
+  location       String?
+  scheduledAt    DateTime? // Pour les posts planifiés (Pro)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  Notification   Notification[]
+  detectedTopics   Topic[]
+}
+
+model Topic {
+  id               String     @id @default(uuid())
+  name             String     @unique // "Tech", "Food", etc.
+  posts            Post[]
+  User User[]
+}
+
+model Like {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  post      Post     @relation(fields: [postId], references: [id])
+  postId    String
+  createdAt DateTime @default(now())
+}
+
+model Comment {
+  id        String        @id @default(uuid())
+  text      String
+  author    User          @relation(fields: [authorId], references: [id])
+  authorId  String
+  post      Post          @relation(fields: [postId], references: [id])
+  postId    String
+  replies   Reply[] // Réponses aux commentaires
+  likes     LikeComment[]
+  createdAt DateTime      @default(now())
+}
+
+// Likes sur les commentaires
+model LikeComment {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  comment   Comment  @relation(fields: [commentId], references: [id])
+  commentId String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, commentId]) // Un like unique par utilisateur/commentaire
+}
+
+// Réponses aux commentaires
+model Reply {
+  id        String   @id @default(uuid())
+  text      String
+  author    User     @relation(fields: [authorId], references: [id])
+  authorId  String
+  comment   Comment  @relation(fields: [commentId], references: [id])
+  commentId String
+  createdAt DateTime @default(now())
+}
+
+//Favoris/Sauvegardes
+model Bookmark {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  post      Post     @relation(fields: [postId], references: [id])
+  postId    String
+  createdAt DateTime @default(now())
 }
 
 model Follow {
   id          String   @id @default(uuid())
-  
+  follower    User     @relation(name: "followers", fields: [followerId], references: [id])
   followerId  String
-  follower    User     @relation("Follow_Follower", fields: [followerId], references: [id])
-  
+  following   User     @relation(name: "following", fields: [followingId], references: [id])
   followingId String
-  following   User     @relation("Follow_Following", fields: [followingId], references: [id])
-  
   createdAt   DateTime @default(now())
-  
-  @@unique([followerId, followingId]) // un user ne peut suivre une personne qu'une fois
 }
 
-model Subscription {
-  id               String         @id @default(uuid())
-  userId           String
-  user             User           @relation(fields: [userId], references: [id])
-  plan             SubscriptionPlan @default(FREE)
-  startDate        DateTime       @default(now())
-  endDate          DateTime?
-  isActive         Boolean        @default(true)
-  autoRenew        Boolean       @default(false)
-  paymentMethodId  String?
-  lastPaymentDate  DateTime?
-  nextBillingDate  DateTime?
+// Musiques/Sons
+model Sound {
+  id        String   @id @default(uuid())
+  name      String
+  artist    String?
+  audioUrl  String
+  duration  Int
+  posts     Post[]
+  createdAt DateTime @default(now())
 }
 
-model Content {
-  id               String         @id @default(uuid())
-  title            String
-  description      String?
-  thumbnail        String
-  status           ContentStatus  @default(DRAFT)
-  type             MediaType
-  duration         Int?           // en secondes
-  releaseDate      DateTime?
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
-  views            Int            @default(0)
-  isFeatured       Boolean        @default(false)
-  isExclusive      Boolean        @default(false)
-  ageRestriction   Int?           // 0 = tout public, 12, 16, 18, etc.
-  metadata         Json?          // Metadata supplémentaire
-  
-  // Relations
-  creatorId        String
-  creator          User           @relation("ContentCreator", fields: [creatorId], references: [id])
-  media            Media[]
-  categories       Category[]
-  tags             Tag[]
-  playlists        PlaylistItem[]
-  favorites        Favorite[]
-  histories        History[]
-  comments         Comment[]
-  reactions        Reaction[]
-
-  Analytics Analytics[]
+// Mots-clés tendances
+model Hashtag {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  posts     Post[]
+  trendRank Int? // Classement des hashtags tendances
+  createdAt DateTime @default(now())
 }
 
-model Media {
-  id               String         @id @default(uuid())
-  contentId        String
-  content          Content        @relation(fields: [contentId], references: [id])
-  url              String
-  format           String         // mp4, mp3, m3u8, etc.
-  quality          String?        // 1080p, 720p, 480p, etc.
-  bitrate          Int?           // en kbps
-  size             Int?           // en octets
-  duration         Int?           // en secondes
-  isDefault        Boolean        @default(false)
-  createdAt        DateTime       @default(now())
-  
-  // Relations
-  uploaderId       String
-  uploader         User           @relation("MediaUploader", fields: [uploaderId], references: [id])
-}
-
-model Category {
-  id               String         @id @default(uuid())
-  name             String         @unique
-  slug             String         @unique
-  description      String?
-  icon             String?
-  isActive         Boolean        @default(true)
-  order            Int?
-  
-  // Relations
-  contents         Content[]
-}
-
-model Tag {
-  id               String         @id @default(uuid())
-  name             String         @unique
-  slug             String         @unique
-  
-  // Relations
-  contents         Content[]
-}
-
-model Playlist {
-  id               String         @id @default(uuid())
-  name             String
-  description      String?
-  isPublic         Boolean        @default(false)
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
-  
-  // Relations
-  ownerId          String
-  owner            User           @relation(fields: [ownerId], references: [id])
-  items            PlaylistItem[]
-}
-
-model PlaylistItem {
-  id               String         @id @default(uuid())
-  playlistId       String
-  playlist         Playlist       @relation(fields: [playlistId], references: [id])
-  contentId        String
-  content          Content        @relation(fields: [contentId], references: [id])
-  order            Int
-  addedAt          DateTime       @default(now())
-}
-
-model Favorite {
-  id               String         @id @default(uuid())
-  userId           String
-  user             User           @relation(fields: [userId], references: [id])
-  contentId        String
-  content          Content        @relation(fields: [contentId], references: [id])
-  createdAt        DateTime       @default(now())
-}
-
-model History {
-  id               String         @id @default(uuid())
-  userId           String
-  user             User           @relation(fields: [userId], references: [id])
-  contentId        String
-  content          Content        @relation(fields: [contentId], references: [id])
-  progress         Int            @default(0) // en secondes
-  lastWatchedAt    DateTime       @default(now())
-  deviceInfo       String?
-}
-
-model Comment {
-  id               String         @id @default(uuid())
-  userId           String
-  user             User           @relation(fields: [userId], references: [id])
-  contentId        String
-  content          Content        @relation(fields: [contentId], references: [id])
-  text             String
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
-  parentId         String?
-  parent           Comment?       @relation("CommentReplies", fields: [parentId], references: [id])
-  replies          Comment[]      @relation("CommentReplies")
-  isEdited         Boolean        @default(false)
-}
-
-model Reaction {
-  id               String         @id @default(uuid())
-  userId           String
-  user             User           @relation(fields: [userId], references: [id])
-  contentId        String
-  content          Content        @relation(fields: [contentId], references: [id])
-  type             String         // like, love, haha, wow, sad, angry
-  createdAt        DateTime       @default(now())
-  
-  @@unique([userId, contentId])
-}
-
-model Payment {
-  id               String         @id @default(uuid())
-  userId           String
-  user             User           @relation(fields: [userId], references: [id])
-  amount           Float
-  currency         String         @default("USD")
-  paymentMethod    String
-  transactionId    String
-  status           String         // pending, completed, failed, refunded
-  description      String?
-  createdAt        DateTime       @default(now())
-  processedAt      DateTime?
-}
-
-model Device {
-  id               String         @id @default(uuid())
-  userId           String
-  user             User           @relation(fields: [userId], references: [id])
-  deviceId         String
-  deviceName       String
-  deviceType       String?        // mobile, tablet, desktop, tv
-  os               String?
-  appVersion       String?
-  lastActive       DateTime       @default(now())
-  fcmToken         String?
+model Duet {
+  id             String   @id @default(uuid())
+  originalPost   Post     @relation("OriginalPost", fields: [originalPostId], references: [id])
+  originalPostId String
+  duetPost       Post     @relation("DuetPost", fields: [duetPostId], references: [id])
+  duetPostId     String
+  createdAt      DateTime @default(now())
+  User           User?    @relation(fields: [userId], references: [id])
+  userId         String?
 }
 
 model Notification {
-  id               String         @id @default(uuid())
-  userId           String
-  user             User           @relation(fields: [userId], references: [id])
-  title            String
-  message          String
-  isRead           Boolean        @default(false)
-  createdAt        DateTime       @default(now())
-  readAt           DateTime?
-  type             String?        // system, content, payment, etc.
-  relatedId        String?        // ID du contenu ou autre entité liée
-  metadata         Json?
+  id        String   @id @default(uuid())
+  user      User     @relation("NotificationUser", fields: [userId], references: [id])
+  userId    String
+  type      String // "like", "comment", "follow", etc.
+  post      Post?    @relation(fields: [postId], references: [id])
+  postId    String?
+  sender    User?    @relation("NotificationSender", fields: [senderId], references: [id])
+  senderId  String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
 }
 
-model Advertisement {
-  id               String         @id @default(uuid())
-  title            String
-  description      String?
-  image            String
-  url              String?
-  startDate        DateTime
-  endDate          DateTime
-  isActive         Boolean       @default(true)
-  targetAudience   Json?         // Critères de ciblage
-  impressions      Int           @default(0)
-  clicks           Int           @default(0)
-  createdAt        DateTime      @default(now())
+
+// Vues
+model View {
+  id        String   @id @default(uuid())
+  post      Post     @relation(fields: [postId], references: [id])
+  postId    String
+  viewer    User?    @relation(fields: [viewerId], references: [id])
+  viewerId  String?
+  device    String? // Mobile, Web, etc.
+  country   String?
+  duration  Int? // Durée de visionnage (en secondes)
+  createdAt DateTime @default(now())
 }
 
-model Analytics {
-  id               String         @id @default(uuid())
-  contentId        String?
-  content          Content?       @relation(fields: [contentId], references: [id])
-  date             DateTime
-  views            Int           @default(0)
-  watchTime        Int           @default(0) // en secondes
-  averageProgress  Float         @default(0) // % de progression moyen
-  devices          Json?         // Répartition par appareil
-  locations        Json?         // Répartition géographique
-  userId           String?
-  user             User?          @relation(fields: [userId], references: [id])
+// Stats créateur
+model UserAnalytic {
+  id             String   @id @default(uuid())
+  user           User     @relation(fields: [userId], references: [id])
+  userId         String
+  totalViews     Int      @default(0)
+  totalLikes     Int      @default(0)
+  totalFollowers Int      @default(0)
+  engagementRate Float?
+  updatedAt      DateTime @updatedAt
+}
+
+// Conversations entre utilisateurs
+model Conversation {
+  id               String             @id @default(uuid())
+  participants     User[]             @relation("ConversationParticipants") // Plusieurs users peuvent être dans un groupe
+  messages         Message[] // Tous les messages de la conversation
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt // Dernière activité
+  UserConversation UserConversation[]
+}
+
+// Messages échangés
+model Message {
+  id             String       @id @default(uuid())
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  conversationId String
+  sender         User         @relation(fields: [senderId], references: [id])
+  senderId       String
+  content        String? // Texte (peut être null si c'est un média)
+  mediaUrl       String? // Photo/Video/GIF (lien vers le fichier)
+  isRead         Boolean      @default(false)
+  isDeleted      Boolean      @default(false) // Pour la suppression côté utilisateur
+  reactions      Reaction[] // Réactions (❤️, 😂, etc.)
+  repliedTo      Message?     @relation("MessageReplies", fields: [repliedToId], references: [id])
+  repliedToId    String? // Réponse à un autre message
+  createdAt      DateTime     @default(now())
+
+  Message Message[] @relation("MessageReplies")
+}
+
+// Réactions aux messages
+model Reaction {
+  id        String   @id @default(uuid())
+  emoji     String // "❤️", "😂", "🔥", etc.
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  message   Message  @relation(fields: [messageId], references: [id])
+  messageId String
+  createdAt DateTime @default(now())
+}
+
+// Liaison entre Users et Conversations) (pour les groupes
+model UserConversation {
+  user           User         @relation(fields: [userId], references: [id])
+  userId         String
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  conversationId String
+  isMuted        Boolean      @default(false) // Désactiver les notifications
+  lastSeenAt     DateTime? // Dernière lecture
+
+  @@id([userId, conversationId]) // Clé composite
 }
