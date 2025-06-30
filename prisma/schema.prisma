@@ -21,36 +21,37 @@ enum UserRole {
 }
 
 model User {
-  id               String             @id @default(uuid())
-  username         String             @unique
-  email            String             @unique
-  password         String
-  bio              String?
-  avatar           String?
-  isVerified       Boolean            @default(false)
-  posts            Post[]
-  comments         Comment[]
-  likes            Like[]
-  followers        Follow[]           @relation("followers")
-  following        Follow[]           @relation("following")
-  notifications    Notification[]     @relation("NotificationUser")
-  sentNotifications Notification[]    @relation("NotificationSender")
-  messages         Message[]
-  bookmarks        Bookmark[]
-  duets            Duet[]
-  analytics        UserAnalytic[]
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
-  Account          Account[]
-  Session          Session[]
-  LikeComment      LikeComment[]
-  Reply            Reply[]
-  View             View[]
-  Reaction         Reaction[]
-  UserConversation UserConversation[]
-  Conversation Conversation[] @relation("ConversationParticipants")
-  Interest Topic[]
-  IpLog IpLog[]
+  id                String             @id @default(uuid())
+  username          String             @unique
+  email             String             @unique
+  password          String
+  bio               String?
+  avatar            String?
+  isVerified        Boolean            @default(false)
+  role              UserRole           @default(USER)
+  posts             Post[]
+  comments          Comment[]
+  likes             Like[]
+  followers         Follow[]           @relation("followers")
+  following         Follow[]           @relation("following")
+  notifications     Notification[]     @relation("NotificationUser")
+  sentNotifications Notification[]     @relation("NotificationSender")
+  messages          Message[]
+  bookmarks         Bookmark[]
+  duets             Duet[]
+  analytics         UserAnalytic[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  Account           Account[]
+  Session           Session[]
+  LikeComment       LikeComment[]
+  Reply             Reply[]
+  View              View[]
+  Reaction          Reaction[]
+  UserConversation  UserConversation[]
+  Conversation      Conversation[]     @relation("ConversationParticipants")
+  Interest          Topic[]
+  IpLog             IpLog[]
 }
 
 model Account {
@@ -89,12 +90,12 @@ model VerificationToken {
 }
 
 model IpLog {
-  id           String    @id @default(uuid())
-  ip           String    // "92.184.105.12"
-  countryCode  String    // "FR"
-  userId       String
-  user         User      @relation(fields: [userId], references: [id])
-  createdAt    DateTime  @default(now())
+  id          String   @id @default(uuid())
+  ip          String // "92.184.105.12"
+  countryCode String // "FR"
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
 }
 
 model Post {
@@ -123,14 +124,14 @@ model Post {
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
   Notification   Notification[]
-  detectedTopics   Topic[]
+  detectedTopics Topic[]
 }
 
 model Topic {
-  id               String     @id @default(uuid())
-  name             String     @unique // "Tech", "Food", etc.
-  posts            Post[]
-  User User[]
+  id    String @id @default(uuid())
+  name  String @unique // "Tech", "Food", etc.
+  posts Post[]
+  User  User[]
 }
 
 model Like {
@@ -239,7 +240,6 @@ model Notification {
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
 }
-
 
 // Vues
 model View {

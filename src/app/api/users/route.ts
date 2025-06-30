@@ -30,8 +30,6 @@ export async function GET(request: Request) {
           id: true,
           email: true,
           username: true,
-          firstName: true,
-          lastName: true,
           role: true,
           createdAt: true,
         }
