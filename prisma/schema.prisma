@@ -109,8 +109,6 @@ model Post {
   likes          Like[]
   comments       Comment[]
   hashtags       Hashtag[]
-  sound          Sound?         @relation(fields: [soundId], references: [id])
-  soundId        String?
   views          View[] // Statistiques de vues
   bookmarks      Bookmark[]
   duetsOriginal  Duet[]         @relation("OriginalPost")
@@ -125,6 +123,8 @@ model Post {
   updatedAt      DateTime       @updatedAt
   Notification   Notification[]
   detectedTopics Topic[]
+
+  Sound Sound[] @relation(name: "post")
 }
 
 model Topic {
@@ -204,7 +204,8 @@ model Sound {
   artist    String?
   audioUrl  String
   duration  Int
-  posts     Post[]
+  post      Post     @relation(name: "post", fields: [postId], references: [id])
+  postId    String
   createdAt DateTime @default(now())
 }
 
