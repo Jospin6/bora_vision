@@ -26,7 +26,6 @@ export async function POST(request: NextRequest) {
         allowDownloads: data.allowDownloads ?? false,
         location: data.location,
         scheduledAt: data.scheduledAt,
-        soundId: data.soundId,
         hashtags: {
           connectOrCreate: hashtagConnections,
         },
@@ -34,7 +33,6 @@ export async function POST(request: NextRequest) {
       include: {
         author: true,
         hashtags: true,
-        sound: true,
       },
     })
 

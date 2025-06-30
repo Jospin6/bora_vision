@@ -13,7 +13,6 @@ export async function GET(
       include: {
         author: true,
         hashtags: true,
-        sound: true,
         likes: true,
         comments: {
           include: {
