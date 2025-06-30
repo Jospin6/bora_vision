@@ -2,13 +2,13 @@ import bcrypt from "bcryptjs";
 import { NextResponse, NextRequest } from "next/server";
 import prisma from "../../../../prisma/prisma";
 import { cookies } from "next/headers";
-import { generateToken } from "@/lib/utils";
+import { generateToken, getUsernameFromEmail } from "@/lib/utils";
 
 
 export async function POST(req: NextRequest) {
   const { email, password } = await req.json();
 
-  const userName = email.split("@")[0]
+  const username = getUsernameFromEmail(email);
 
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
       data: {
         email,
         password: hashedPassword,
-        username: userName,
+        username,
       },
     });
 

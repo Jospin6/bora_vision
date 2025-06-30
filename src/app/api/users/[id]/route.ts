@@ -14,21 +14,11 @@ export async function GET(
         id: true,
         email: true,
         username: true,
-        firstName: true,
-        lastName: true,
         avatar: true,
         bio: true,
         role: true,
         createdAt: true,
         updatedAt: true,
-        lastLogin: true,
-        _count: {
-          select: {
-            createdContents: true,
-            playlists: true,
-            favorites: true
-          }
-        }
       }
     })
 
@@ -68,8 +58,6 @@ export async function PUT(
     const updatedUser = await prisma.user.update({
       where: { id: id },
       data: {
-        firstName: body.firstName,
-        lastName: body.lastName,
         avatar: body.avatar,
         bio: body.bio
       },
@@ -77,8 +65,6 @@ export async function PUT(
         id: true,
         email: true,
         username: true,
-        firstName: true,
-        lastName: true,
         avatar: true,
         bio: true,
         role: true,

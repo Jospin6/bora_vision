@@ -21,3 +21,10 @@ export async function generateToken(user: any) {
 
   return token;
 }
+
+export function getUsernameFromEmail(email: string): string {
+  // Récupère la partie avant le @, retire les caractères spéciaux, limite la longueur
+  return email
+    .split('@')[0]
+    .replace(/[^a-zA-Z0-9_]/g, '_');
+}
